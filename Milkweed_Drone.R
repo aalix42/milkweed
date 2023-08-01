@@ -25,7 +25,7 @@ plot(NDVI07_05)
 plot(poly07_05,add=TRUE)
 
 #calculate EBI
-EBI07_05 <- (d07_05[[1]] + d07_05[[2]] + d07_05[[3]])/ ((d07_05[[2]]/d07_05[[1]]) + (d07_05[[3]]-d07_05[[1]]+1))
+EBI07_05 <- (d07_05[[1]] + d07_05[[2]] + d07_05[[3]])/ ((d07_05[[2]]/d07_05[[1]]) * (d07_05[[3]]-d07_05[[1]]+1))
 plot(EBI07_05)
 plot(poly07_05,add=TRUE)
 
@@ -56,7 +56,7 @@ d07_06 <- rast(c("K:/Environmental_Studies/hkropp/projects/aalix/Flight_07_06/fl
 poly07_06 <- vect("K:/Environmental_Studies/hkropp/projects/aalix/forR/poly_07_06.shp")
 plotRGB(d07_06, r=3, g = 2, b = 1, stretch = "lin")
 
-EBI07_06 <- (d07_06[[1]] + d07_06[[2]] + d07_06[[3]])/ ((d07_06[[2]]/d07_06[[1]]) + (d07_06[[3]]-d07_06[[1]]+1))
+EBI07_06 <- (d07_06[[1]] + d07_06[[2]] + d07_06[[3]])/ ((d07_06[[2]]/d07_06[[1]]) * (d07_06[[3]]-d07_06[[1]]+1))
 plot(EBI07_06)
 plot(poly07_06,add=TRUE)
 
@@ -87,7 +87,7 @@ d07_14phantom <- rast(c("K:/Environmental_Studies/hkropp/projects/aalix/flight_0
                  "K:/Environmental_Studies/hkropp/projects/aalix/Flight_07_14/flight_07_14_transparent_reflectance_nir.tif"))
 poly07_14 <- vect("K:/Environmental_Studies/hkropp/projects/aalix/forR/poly07_14.shp")
 
-EBI07_14 <- (d07_14phantom[[1]] + d07_14phantom[[2]]) + (d07_14phantom[[3]]/ (d07_14phantom[[2]]/d07_14phantom[[1]]) + d07_14phantom[[3]]-d07_14phantom[[1]])
+EBI07_14 <- (d07_14phantom[[1]] + d07_14phantom[[2]]) + (d07_14phantom[[3]]/ (d07_14phantom[[2]]/d07_14phantom[[1]]) * d07_14phantom[[3]]-d07_14phantom[[1]])
 plot(EBI07_14)
 plot(poly07_14,add=TRUE)
 
@@ -112,29 +112,26 @@ zonal_07_014 <- zonal(d07_14phantom, poly07_14, fun="mean")
 
 table_07_14f<- cbind(table_07_14, zonal_07_014)
 table_07_14f$NDVI<-zonal_07_14[,1]
-install.packages("writexl")
 
-library("writexl")
-library("readxl")
+
 # xls files
 
-field2023 <- read_excel("K:/Environmental_Studies/hkropp/projects/aalix/field2023Export.xlsx")
 
-d07_14Matrice <- rast(c("K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_blue.tif",
+##d07_14Matrice <- rast(c("K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_blue.tif",
                         "K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_green.tif",
                         "K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_red.tif",
                         "K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_red edge.tif",
                         "K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_nir.tif"))
-poly07_14mica <- vect("K:/Environmental_Studies/hkropp/projects/aalix/forR/poly07_14.shp")
-plotRGB(d07_14Matrice, r=3, g = 2, b = 1, stretch = "lin")
+#poly07_14mica <- vect("K:/Environmental_Studies/hkropp/projects/aalix/forR/poly07_14.shp")
+#plotRGB(d07_14Matrice, r=3, g = 2, b = 1, stretch = "lin")
 
-NDVI07_14_Matrice <- (d07_14Matrice[[5]]-d07_14Matrice[[3]]) / (d07_14Matrice[[5]] + d07_14Matrice[[3]])
-plot(NDVI07_14_Matrice)
-plot(poly07_14mica, add = TRUE)
+#NDVI07_14_Matrice <- (d07_14Matrice[[5]]-d07_14Matrice[[3]]) / (d07_14Matrice[[5]] + d07_14Matrice[[3]])
+#plot(NDVI07_14_Matrice)
+#plot(poly07_14mica, add = TRUE)
 
-zonal_07_14_mica <- zonal(NDVI07_14_Matrice, poly07_14mica, fun="mean")
-table_07_14mica <- values(poly07_14mica, dataframe = TRUE)
-table_07_14mica$NDVI<-zonal_07_14_mica[,1]
+#zonal_07_14_mica <- zonal(NDVI07_14_Matrice, poly07_14mica, fun="mean")
+#table_07_14mica <- values(poly07_14mica, dataframe = TRUE)
+#table_07_14mica$NDVI<-zonal_07_14_mica[,1]
 ####merge data----
 df_0705 <- data.frame(Plot = table_07_05f$Plot,
                       Subplot = table_07_05f$Subplot,
@@ -175,15 +172,16 @@ df_0714 <- data.frame(Plot = table_07_14f$Plot,
                      
 allFlights <- rbind(df_0705, df_0706, df_0714)
 
-allData <- left_join(field2023, allFlights, by=c("Plot", "Subplot"))
 #allFlights$dateF <- mdy(allFlights$Date)
 ####new data ----
 field2022 <- read.csv("K:/Environmental_Studies/hkropp/projects/aalix/FP2022.csv")
-field2023 <- read.csv("K:/Environmental_Studies/hkropp/projects/aalix/FP2023.csv")                      
+field2022$EBI<- (field2022$Blue + field2022$Green + field2022$Red)/((field2022$Green/field2022$Blue)*(field2022$Red - field2022$Blue+1))
+##(d07_06[[1]] + d07_06[[2]] + d07_06[[3]])/ ((d07_06[[2]]/d07_06[[1]]) + (d07_06[[3]]-d07_06[[1]]+1))
+field2023 <- read.csv("K:/Environmental_Studies/hkropp/projects/aalix/field_plotsFixed.csv")
 #field2023$dateF<- mdy(field2023$Date)
-df2023 <- left_join(field2023, allFlights, by=c("Plot", "Subplot", "date"))
+df2023 <- left_join(field2023, allFlights, by=c("Plot", "Subplot", "Date"))
 
-fieldAll<- rbind(field2022, field2023)
+fieldAll<- rbind(field2022, df2023)
 
 
 fieldAll$Flowering <- ifelse(fieldAll$Date == "6/29/2022", "F",
@@ -193,23 +191,11 @@ fieldAll$Flowering <- ifelse(fieldAll$Date == "6/29/2022", "F",
                       ifelse(fieldAll$Date == "7/13/2022", "S",
                       ifelse(fieldAll$Date == "7/5/2023", "F",
                       ifelse(fieldAll$Date == "7/6/2023", "F",
-                      ifelse(fieldAll$Date == "7/14/2023", "F",
+                      ifelse(fieldAll$Date == "7/14/2023", "T",
                       ifelse(fieldAll$Date == "7/25/2023", "S",
                       ifelse(fieldAll$Date == "7/26/2023", "S", NA))))))))))
 
-field2022$Flowering2022 <- ifelse(field2022$Date == "6/29/2022", "F",
-                      ifelse(field2022$Date == "6/30/2022", "F",
-                      ifelse(field2022$Date == "7/11/2022", "T",
-                      ifelse(field2022$Date == "7/16/2022", "S",
-                      ifelse(field2022$Date == "7/13/2022", "S", NA)))))
 
-field2023$Flowering2023 <- ifelse(field2023$Date == "7/5/2023", "F",
-                     ifelse(field2023$Date == "7/6/2023", "F",
-                      ifelse(field2023$Date == "7/14/2023", "F",
-                      ifelse(field2023$Date == "7/25/2023", "S",
-                     ifelse(fieldAll$Date == "7/26/2023", "S", NA)))))
-
-flowerData <- rbind(Flowering, EBI)
 fieldAll$dateF <- mdy(fieldAll$Date)
 fieldAll$Year <- year(fieldAll$dateF)
 
@@ -217,10 +203,6 @@ fieldAll$FLD <- fieldAll$Flowers/fieldAll$Individuals
 fieldAll$SSD <- fieldAll$Seeds/fieldAll$Individuals
 fieldAll$Cover <- as.numeric(fieldAll$Cover)
 fieldAll$DD <- fieldAll$DeadFlowers/fieldAll$Individuals
-
-install.packages("writexl")
-write_xlsx(fieldAll,"K:/Environmental_Studies/hkropp/projects/aalix//fieldAllExport.xlsx")
-write_xlsx(field2023,"K:/Environmental_Studies/hkropp/projects/aalix//field2023Export.xlsx")
 
 Flowering <- fieldAll %>%
   filter(Flowering == "F")
@@ -257,7 +239,10 @@ ggplot(Seeding, aes(x=as.factor(Year), y=SSD)) +
   geom_boxplot()
 
 
-ggplot(allFlights, aes(x=Flowers, y=EBI, color=Flowering)) + 
+ggplot(fieldAll%>%filter(Flowering=="F"), aes(x=Flowers, y=EBI, color=Flowering)) + 
+  geom_point()
+
+ggplot(fieldAll%>%filter(Flowering=="S"), aes(x=Flowers, y=EBI, color=Flowering)) + 
   geom_point()
 
 SeedSummary <- Seeding %>%
