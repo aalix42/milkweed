@@ -49,4 +49,8 @@ for(i in 1:length(milkweed)){
  milkR[[i]] <- rasterize(milkL[[i]], imgL[[imgPos]], background=0)
 }
 
-plot(milkR[[10]])
+
+for(i in 1:length(milkweed)){
+  writeRaster(milkR[[i]], paste0("/media/hkropp/research/milkweed/training/masks_g22/", milkweedName[i] ))
+}
+
