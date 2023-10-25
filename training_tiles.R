@@ -11,15 +11,15 @@ img22c <- mask(imgG22, extent22)
 
 
 set.seed(15)
-rowsi <- sample(1:(nrow(img22c)-255), 160)
+rowsi <- sample(1:(nrow(img22c)-255), 280)
 set.seed(43)
-colsi <- sample(1:(ncol(img22c)-255), 160)
+colsi <- sample(1:(ncol(img22c)-255), 280)
 
 # subset raster
 training.samples <- list()
 training.check <- numeric()
 
-for(i in 1:160){
+for(i in 1:280){
   training.samples[[i]] <-  imgG22[rowsi[i]:(rowsi[i]+255), colsi[i]:(colsi[i]+255), drop=FALSE]
   # create a check to remove any training samples with NAs
   training.check[i] <- ifelse(sum(values(training.samples[[i]],mat=FALSE)) == 0,0,1)
