@@ -11,15 +11,15 @@ img22c <- mask(imgG22, extent22)
 
 
 set.seed(15)
-rowsi <- sample(1:(nrow(img22c)-255), 280)
+rowsi <- sample(1:(nrow(img22c)-255), 300)
 set.seed(43)
-colsi <- sample(1:(ncol(img22c)-255), 280)
+colsi <- sample(1:(ncol(img22c)-255), 300)
 
 # subset raster
 training.samples <- list()
 training.check <- numeric()
 
-for(i in 1:280){
+for(i in 1:300){
   training.samples[[i]] <-  imgG22[rowsi[i]:(rowsi[i]+255), colsi[i]:(colsi[i]+255), drop=FALSE]
   # create a check to remove any training samples with NAs
   training.check[i] <- ifelse(sum(values(training.samples[[i]],mat=FALSE)) == 0,0,1)
@@ -36,14 +36,14 @@ values(training.samples[[10]])
 training.valid <- which(training.check == 1)
 samples.use <- list()
 #first sample looks odd
-for(i in 1:107){
+for(i in 1:200){
   samples.use[[i]] <- training.samples[[training.valid[i]]]
 }
 plotRGB(samples.use[[3]], stretch="lin")
 
 
 
-for(i in 1:107){
+for(i in 108:200){
   writeRaster(samples.use[[i]], paste0("K:/Environmental_Studies/hkropp/projects/aalix/classification/training/img_g22/img_",i,".tif"))
 } 
 
