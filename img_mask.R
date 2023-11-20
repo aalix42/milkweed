@@ -9,13 +9,13 @@ library(dplyr)
 
 dirD <- "/media/hkropp/research/milkweed"
 # names of all shapefiles
-img <- list.files(paste0(dirD, "/training/img_g22/img_g22"),pattern=".tif")
+img <- list.files(paste0(dirD, "/training/img_g22"),pattern=".tif")
 imgXML <- grepl(".aux.xml",img)
 img <- img[imgXML == FALSE ] 
 
 
 
-milkweed <- list.files(paste0(dirD, "/shapefiles/shapefiles"),pattern=".shp")
+milkweed <- list.files(paste0(dirD, "/shapefiles"),pattern=".shp")
 milkweedXML <- grepl(".xml", milkweed)
 milkweed <- milkweed[milkweedXML == FALSE ] 
 
@@ -28,7 +28,7 @@ milkweedName <- gsub(".shp", ".tif",milkweed)
 # read in all images
 imgL <- list()
 for(i in 1:length(img)){
-  imgL[[i]] <- rast(paste0(dirD,"/training/img_g22/img_g22/" ,img[i]))
+  imgL[[i]] <- rast(paste0(dirD,"/training/img_g22/" ,img[i]))
   
 }
 
@@ -37,7 +37,7 @@ for(i in 1:length(img)){
 # read in shapefiles
 milkL <- list()
 for(i in 1:length(milkweed)){
-  milkL[[i]] <- vect(paste0(dirD, "/shapefiles/shapefiles/",milkweed[i]))
+  milkL[[i]] <- vect(paste0(dirD, "/shapefiles/",milkweed[i]))
 }  
 plot(milkL[[1]])
 
