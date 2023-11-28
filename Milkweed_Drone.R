@@ -4,6 +4,7 @@ library(sf)
 library(dplyr)
 library(lubridate)
 library(ggplot2)
+library(RColorBrewer)
 
 #### read in data ----
 # read in drone data 
@@ -105,6 +106,16 @@ zonal_07_06r <- zonal(d07_06, poly07_06, fun="mean")
 
 table_07_06f <- cbind(table_07_06, zonal_07_06r[,1:5])
 table_07_06f$NDVI<-table_07_06n$NDVI
+
+#read in old data 
+old7_11 <- rast(c("K:/Environmental_Studies/hkropp/projects/aalix/oldData/flight_07_11_2022_transparent_reflectance_blue.tif",
+                  "K:/Environmental_Studies/hkropp/projects/aalix/oldData/flight_07_11_2022_transparent_reflectance_red.tif",
+                  "K:/Environmental_Studies/hkropp/projects/aalix/oldData/flight_07_11_2022_transparent_reflectance_green.tif",
+                  "K:/Environmental_Studies/hkropp/projects/aalix/oldData/flight_07_11_2022_transparent_reflectance_red edge.tif",
+                  "K:/Environmental_Studies/hkropp/projects/aalix/oldData/flight_07_11_2022_transparent_reflectance_nir.tif"))
+plotRGB(old7_11, r = 2, g = 3, b = 1, stretch = "lin")
+
+
 ####read in 07/14 ----
 d07_14phantom <- rast(c("K:/Environmental_Studies/hkropp/projects/aalix/flight_07_14/flight_07_14_transparent_reflectance_blue.tif",
                  "K:/Environmental_Studies/hkropp/projects/aalix/Flight_07_14/flight_07_14_transparent_reflectance_red.tif",
@@ -143,11 +154,11 @@ table_07_14f$NDVI<-zonal_07_14[,1]
 # xls files
 
 
-##d07_14Matrice <- rast(c("K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_blue.tif",
-                        "K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_green.tif",
-                        "K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_red.tif",
-                        "K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_red edge.tif",
-                        "K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_nir.tif"))
+#d07_14Matrice <- rast(c("K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_blue.tif",
+                       #"K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_green.tif",
+                        #"K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_red.tif",
+                      #"K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_red edge.tif",
+                        #"K:/Environmental_Studies/hkropp/projects/aalix/mica_07_14/mica_07_14_23_transparent_reflectance_nir.tif"))
 #poly07_14mica <- vect("K:/Environmental_Studies/hkropp/projects/aalix/forR/poly07_14.shp")
 #plotRGB(d07_14Matrice, r=3, g = 2, b = 1, stretch = "lin")
 
@@ -233,6 +244,7 @@ fieldAll$Flowering <- ifelse(fieldAll$Date == "6/29/2022", "F",
                       ifelse(fieldAll$Date == "7/26/2023", "S", NA))))))))))
 
 
+
 fieldAll$dateF <- mdy(fieldAll$Date)
 fieldAll$Year <- year(fieldAll$dateF)
 
@@ -247,12 +259,25 @@ fieldAll$Bloom <- fieldAll$Flowers+fieldAll$Buds
 #FlowersPerIndividuals, does percent coverage change?
 Flowering <- fieldAll %>%
   filter(Flowering == "F")
-ggplot(Flowering, aes(x=as.factor(Year), y=FLD)) + 
-  geom_boxplot()
 
+ggplot(Flowering, aes(x=as.factor(Year), y=FLD, fill = as.factor(Year))) +
+  geom_boxplot() +
+  xlab("Year") + 
+  ylab("Inflorescence/Individual") + 
+  theme_classic()+labs(fill = "Year") + 
+  theme(text = element_text(size = 36))+
+  scale_fill_manual(values = c("red", "yellow"))
 
+ggplot(fieldAll, aes(x=as.factor(Year), y=Individuals, fill= as.factor(Year))) + 
+  geom_boxplot()+ 
+  xlab("Year") + 
+  theme_classic()+labs(fill = "Year") + 
+  theme(text = element_text(size = 40))+
+  scale_fill_manual(values = c("red", "yellow"))
 ggplot(Flowering, aes(x=as.factor(DD), y = NDVI))
 geom_boxplot()
+
+
 
 
 #summary stats 
@@ -264,13 +289,15 @@ FlowerSummary <- Flowering %>%
 FlowerSummary$SE<- FlowerSummary$sd/sqrt(FlowerSummary$n)
 FlowerSummary
 
+2.48-1.432
 
-
-IndividualSummarry <- Flowering %>%
+IndividualSummarry <- fieldAll %>%
   group_by(Year) %>%
   summarise(mean = mean(Individuals, na.rm=TRUE),
             sd = sd(Individuals, na.rm=TRUE), 
             n = n())
+
+IndividualSummarry
 t.test(Flowering$FLD ~ as.factor(Flowering$Year))
 shapiro.test(Flowering$FLD[Flowering$Year == 2022])
 shapiro.test(Flowering$FLD[Flowering$Year == 2023])
@@ -359,6 +386,15 @@ ggplot(fieldAll%>%filter(Stressed==0), aes(x=FLD, y=NDVI, color=Flowering)) +
 ggplot(fieldAll%>%filter(Individuals>0), aes(x=as.factor(Stressed), y=NDVI)) + 
   geom_boxplot()
 
+ggplot(fieldAll, aes(x=as.factor(Year), y=Individuals, fill= as.factor(Year))) + 
+  geom_boxplot()+ 
+  xlab("Year") + 
+  theme_classic()+labs(fill = "Year") + 
+  theme(text = element_text(size = 25))+
+  scale_fill_manual(values = c("red", "yellow"))
+                                        
+
+
 
 ggplot(fieldAll, aes(x=as.factor(dateF), y=GNDVI, color=Flowering)) + 
   geom_boxplot()
@@ -375,7 +411,6 @@ ggplot(fieldAll%>%filter(Cover>0), aes(x=Cover, y=GNDVI, color=Flowering)) +
 
 ggplot(fieldAll%>%filter(Cover>0), aes(x=Cover, y=GI, color=Flowering)) + 
   geom_point()
-
 
 
 ggplot(fieldAll, aes(x=Red, y=Blue, color=Flowering)) + 
